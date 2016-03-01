@@ -30,6 +30,7 @@ ITG3701::ITG3701(uint8_t i2cAddress)
 
 void ITG3701::begin(Gscale m_gscale, Godr m_godr, Gbw m_gbw)
 {
+  Wire.begin();
   I2CwriteByte(ITG3701_ADDRESS, ITG3701_PWR_MGMT_1, 0x00);  // Clear sleep mode bit (6), enable all sensors
   I2CwriteByte(ITG3701_ADDRESS, ITG3701_PWR_MGMT_1, 0x01);  // Auto select clock source to be PLL gyroscope reference if ready else
   I2CwriteByte(ITG3701_ADDRESS, ITG3701_CONFIG, 0x03);
@@ -40,7 +41,6 @@ void ITG3701::begin(Gscale m_gscale, Godr m_godr, Gbw m_gbw)
   I2CwriteByte(ITG3701_ADDRESS, ITG3701_GYRO_CONFIG, c | m_gscale << 3); // Set full scale range for the gyro
   I2CwriteByte(ITG3701_ADDRESS, ITG3701_INT_PIN_CFG, 0x20);
   I2CwriteByte(ITG3701_ADDRESS, ITG3701_INT_ENABLE, 0x01);  // Enable data ready (bit 0) interrupt
-  Wire.begin();
 }
 
 void ITG3701::updateGyro(){
@@ -74,8 +74,7 @@ uint8_t ITG3701::I2CreadByte(uint8_t address, uint8_t subAddress)
 void ITG3701::I2CreadBytes(uint8_t address, uint8_t subAddress, uint8_t * dest, uint8_t count)
 {
 	Wire.beginTransmission(address);   // Initialize the Tx buffer
-	// Next send the register to be read. OR with 0x80 to indicate multi-read.
-	Wire.write(subAddress | 0x80);     // Put slave register address in Tx buffer
+	Wire.write(subAddress);     // Put slave register address in Tx buffer
 	Wire.endTransmission(false);       // Send the Tx buffer, but send a restart to keep connection alive
 	uint8_t i = 0;
 	Wire.requestFrom(address, count);  // Read bytes from slave register address
